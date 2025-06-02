@@ -181,7 +181,8 @@ private:
         delete node;
     }
 
-    // KDTreeの中からクエリの条件に合うフォトンを探索してResultQueueに詰める
+    // KD-Treeの中からクエリの条件に合うフォトンを探索してResultQueueに詰める
+    // 実質KD-Treeを"使ってる"のがここ。KD-Treeを使うと、この部分が効率的に計算できる
     void locate_points(typename KDTree<T>::ResultQueue* pqueue, KDTreeNode* node, typename KDTree<T>::Query &query){
         if(node == NULL) return;
         const int axis = node->axis;
@@ -231,7 +232,8 @@ private:
     static bool kdtree_less_operator_z(const T& left, const T& right){
         return left.pos.z < right.pos.z;
     }
-
+    
+    // KD-Treeを"作ってる"のがここ。
     KDTreeNode* create_kdtree_sub(typename std::vector<T>::iterator begin, typename std::vector<T>::iterator end, int depth){
         if(end - begin <= 0){
             return NULL;
