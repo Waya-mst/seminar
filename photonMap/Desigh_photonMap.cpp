@@ -67,7 +67,8 @@ public:
     };
 
     struct ElementForQueue{
-        // 
+        // 放射輝度計算に使いやすいように定義
+        // 始点からのレイトレ
     };
 
     typedef std::priority_queue<ElementForQueue, std::vector<ElementForQueue>> ResultQueue;
@@ -75,7 +76,7 @@ public:
 private:
     std::vector<T> points;
     struct KDTreeNode{
-        //
+
     };
 
     KDTreeNode* root;
