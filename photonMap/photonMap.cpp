@@ -208,17 +208,17 @@ private:
             }
         }
         if(delta > 0.0){
-            // 探索中心がノードの?側にあるので、ノードの?側を優先して探索
-            locate_points(pqueue, node->/*right or left*/, query);
+            // 探索中心がノードの右側にあるので、ノードの右側を優先して探索
+            locate_points(pqueue, node->right, query);
 
             // 分割平面と探索中心の距離が探索範囲より遠ければ、探索中心から見て分割平面の向こう側の点は調べても意味ない(絶対探索範囲より遠くなる)
-            if(/*???*/){
-                locate_points(pqueue, node->/*right or left*/, query);
+            if(delta * delta < query.max_distance2){
+                locate_points(pqueue, node->left, query);
             }
         }else{
-            locate_points(pqueue, node->/*right or left*/, query);
-            if(/*???*/){
-                locate_points(pqueue, node->/*right or left*/, query);
+            locate_points(pqueue, node->left, query);
+            if(delta * delta < query.max_distance2){
+                locate_points(pqueue, node->right, query);
             }
         }
     }
@@ -318,8 +318,8 @@ void create_photon_map(const int shoot_photon_num, PhotonMap *photon_map){
         
         bool trace_end = false;
         for(; !trace_end;){
-                if(std::max(now_flux.x, std::max(now_flux.y, now_flux.z)) <= 0.0)
-                    break;
+            if(std::max(now_flux.x, std::max(now_flux.y, now_flux.z)) <= 0.0)
+                break;
             
             double t;
             int id;
@@ -358,12 +358,12 @@ void create_photon_map(const int shoot_photon_num, PhotonMap *photon_map){
                     }
                 }break;
                 case SPECULAR:{
-                    now_ray = /*反射するレイのベクトル*/;
+                    now_ray = Ray(hitpoint,  now_ray.dir - normal * 2.0 * Dot(normal, now_ray.dir));
                     now_flux = Multiply(now_flux, obj.color);
                     continue;
                 }break;
                 case REFRACTION: {
-                    Ray reflection_ray = /*反射するレイのベクトル*/;
+                    Ray reflection_ray = Ray(hitpoint,  now_ray.dir - normal * 2.0 * Dot(normal, now_ray.dir));
                     bool into = Dot(normal, orienting_normal) > 0.0;
 
                     const double nc = 1.0;
@@ -498,7 +498,7 @@ Color radiance(const Ray& ray,
                         / probability
                         / russian_roulette_probability;
                     }else{// 屈折
-                        return obj.emission +
+                        return obj.emission + 
                         Multiply(obj.color, radiance(reflection_ray, depth+1, photon_map, gather_radius, gather_max_photon_num) * Tr)
                         / (1.0 - probability)
                         / russian_roulette_probability;
@@ -611,7 +611,7 @@ int main(int argc, char **argv){
                     const double r2 = 2.0 * rand01(), dy = r2 < 1.0 ? sqrt(r2) - 1.0 : 1.0 - sqrt(2.0 - r2);
                     Vec dir = cx * (((sx + 0.5 + dx) / 2.0 + x) / width - 0.5) +
                     cy * (((sy + 0.5 + dy) / 2.0 + y) / height - 0.5) + camera.dir;
-                    Color accum = radiance(Ray(camera.org + dir * 130.0, Normalize(dir)), 3, &photon_map, gather_photon_radius, gather_max_photon_num);
+                    Color accum = radiance(Ray(camera.org + dir * 130.0, Normalize(dir)), 0, &photon_map, gather_photon_radius, gather_max_photon_num);
                     image[image_index] = image[image_index] + accum;
                 }
             }
